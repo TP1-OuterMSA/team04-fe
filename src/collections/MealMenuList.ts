@@ -10,8 +10,13 @@ export class MealMenuList {
         this.menus = menus;
     }
 
+    private formatDay(dayArray: string): string {
+        const [year, month, date] = dayArray;
+        return `${year}.${month.toString().padStart(2, '0')}.${date.toString().padStart(2, '0')}`;
+    }
+
     public extractDayLabels(): DayLabel[] {
-        const labels = this.menus.map(menu => menu.day);
+        const labels = this.menus.map(menu => this.formatDay(menu.day));
         const uniqueLabels = Array.from(new Set(labels));
         return uniqueLabels.map(label => new DayLabel(label));
     }
@@ -25,7 +30,7 @@ export class MealMenuList {
     public findMenu(mealType: MealType, dayLabel: DayLabel): MenuContent {
         const match = this.menus.find(menu =>
             menu.mealType === mealType.value() &&
-            menu.day === dayLabel.value()
+            this.formatDay(menu.day) === dayLabel.value()
         );
 
         if (!match) {
@@ -34,4 +39,5 @@ export class MealMenuList {
 
         return new MenuContent(match.menuContent);
     }
+
 }
