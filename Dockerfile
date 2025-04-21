@@ -3,6 +3,9 @@ FROM node:18-alpine as build
 
 WORKDIR /app
 
+ARG VITE_API_HOST
+ENV VITE_API_HOST=$VITE_API_HOST
+
 # 종속성 설치
 COPY package.json package-lock.json ./
 RUN npm ci
