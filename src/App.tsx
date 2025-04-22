@@ -5,10 +5,10 @@ import MealTableContainer from './component/MealTableContainer';
 
 const App: React.FC = () => {
   return (
-      <BrowserRouter>
+      <BrowserRouter basename='/team4/'>
         <Routes>
-          <Route path="/" element={<Navigate to="/team4/meal/showitems" replace />} />
-          <Route path="/team4/meal/showitems" element={<MealTableContainer />} />
+          <Route path="/" element={<Navigate to="/meal/showitems" replace />} />
+          <Route path="/meal/showitems" element={<MealTableContainer />} />
         </Routes>
       </BrowserRouter>
   );
