@@ -11,15 +11,22 @@ export class MealMenuList {
     }
 
     private formatDay(dateString: string): string {
-        const [year, month, date] = dateString.split('-'); // "2025-05-02" → ["2025", "05", "02"]
-        return `${year}.${month.padStart(2, '0')}.${date.padStart(2, '0')}`;
+        // ✅ 안정적으로 날짜를 파싱하기 위해 UTC 시간 기준으로 고정
+        const date = new Date(dateString + 'T00:00:00');
+        return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date
+            .getDate()
+            .toString()
+            .padStart(2, '0')}`;
     }
 
-
     public extractDayLabels(): DayLabel[] {
-        const labels = this.menus.map(menu => this.formatDay(menu.date));
-        const uniqueLabels = Array.from(new Set(labels));
-        return uniqueLabels.map(label => new DayLabel(label));
+        const rawDates = this.menus.map(menu => menu.date); // 예: "2025-05-02"
+        const uniqueDates = Array.from(new Set(rawDates));
+
+        // ✅ 날짜 정렬 (Date 객체를 기준으로 정확히 정렬)
+        uniqueDates.sort((a, b) => new Date(a + 'T00:00:00').getTime() - new Date(b + 'T00:00:00').getTime());
+
+        return uniqueDates.map(date => new DayLabel(this.formatDay(date)));
     }
 
     public extractMealTypes(): MealType[] {
@@ -40,5 +47,4 @@ export class MealMenuList {
 
         return new MenuContent(match.menuContent);
     }
-
 }

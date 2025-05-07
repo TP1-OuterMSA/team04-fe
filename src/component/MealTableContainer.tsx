@@ -4,7 +4,7 @@ import MealTable from '../component/MealTable';
 import { MealMenu } from '../types/meal';
 
 const MealTableContainer: React.FC = () => {
-    const { mealMenus, isLoading } = useMealData(); // ✅ 로딩 상태 포함
+    const { mealMenus, isLoading } = useMealData();
     const [baseDate, setBaseDate] = useState(new Date());
 
     const formatDate = (date: Date): string =>
@@ -13,32 +13,42 @@ const MealTableContainer: React.FC = () => {
             .toString()
             .padStart(2, '0')}`;
 
+    // 날짜 문자열을 안정적으로 Date로 변환 (시간대 문제 방지)
+    const parseDate = (raw: string): Date => {
+        const [year, month, day] = raw.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    };
+
+    const stripTime = (date: Date): Date => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
     const { monday, friday, dateRange } = useMemo(() => {
         const dayOfWeek = baseDate.getDay();
         const monday = new Date(baseDate);
         const friday = new Date(baseDate);
-        monday.setDate(baseDate.getDate() - (dayOfWeek - 1));
+        monday.setDate(baseDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // 월요일 기준
         friday.setDate(monday.getDate() + 4);
         return {
-            monday,
-            friday,
+            monday: stripTime(monday),
+            friday: stripTime(friday),
             dateRange: `${formatDate(monday)} ~ ${formatDate(friday)}`,
         };
     }, [baseDate]);
 
     const getWeekNumber = (date: Date): number => {
         const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-        const dayOffset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // 월요일 기준
-        const adjustedDate = date.getDate() + dayOffset;
-        return Math.ceil(adjustedDate / 7);
+        const offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+        return Math.ceil((date.getDate() + offset) / 7);
     };
 
     const title = `${baseDate.getFullYear()}년 ${baseDate.getMonth() + 1}월 ${getWeekNumber(baseDate)}주차 식단표`;
 
     const filterMenusInRange = (start: Date, end: Date): MealMenu[] => {
+        const startDate = stripTime(start).getTime();
+        const endDate = stripTime(end).getTime();
+
         return mealMenus.filter((menu) => {
-            const date = new Date(menu.date);
-            return date >= start && date <= end;
+            const date = stripTime(parseDate(menu.date)).getTime();
+            return date >= startDate && date <= endDate;
         });
     };
 
@@ -64,7 +74,6 @@ const MealTableContainer: React.FC = () => {
         <div className="container">
             <h1>{title} ({dateRange})</h1>
 
-            {/* ✅ 로딩 중일 때는 아무것도 렌더링하지 않음 */}
             {isLoading ? null : (
                 <div style={{ minHeight: '600px' }}>
                     {thisWeekMenus.length > 0 ? (
@@ -75,7 +84,6 @@ const MealTableContainer: React.FC = () => {
                 </div>
             )}
 
-            {/* ✅ 버튼은 항상 렌더링 */}
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', gap: '1rem' }}>
                 <button
                     onClick={() =>
