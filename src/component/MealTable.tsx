@@ -65,14 +65,14 @@ const MealTableRow: React.FC<MealTableRowProps> = ({ mealType, dayLabels, menuLi
     );
 };
 
-// ✅ 월~금 날짜 고정 유틸 함수
+
 const generateFixedWeekLabels = (menus: MealMenu[]): DayLabel[] => {
     if (menus.length === 0) return [];
 
     const dates = menus.map((m) => new Date(m.date));
     const monday = new Date(Math.min(...dates.map((d) => d.getTime())));
     const day = monday.getDay();
-    monday.setDate(monday.getDate() - ((day + 6) % 7)); // 월요일로 보정
+    monday.setDate(monday.getDate() - ((day + 6) % 7));
 
     const labels: DayLabel[] = [];
 
