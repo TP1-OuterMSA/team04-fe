@@ -10,7 +10,7 @@ interface MealTableProps {
 
 export const MealTable: React.FC<MealTableProps> = ({ mealMenu }) => {
     const menuList = new MealMenuList(mealMenu);
-    const dayLabels = menuList.extractDayLabels();
+    const dayLabels = generateFixedWeekLabels(mealMenu);
     const mealTypes = menuList.extractMealTypes();
 
     return (
@@ -63,6 +63,30 @@ const MealTableRow: React.FC<MealTableRowProps> = ({ mealType, dayLabels, menuLi
             {cells}
         </tr>
     );
+};
+
+
+const generateFixedWeekLabels = (menus: MealMenu[]): DayLabel[] => {
+    if (menus.length === 0) return [];
+
+    const dates = menus.map((m) => new Date(m.date));
+    const monday = new Date(Math.min(...dates.map((d) => d.getTime())));
+    const day = monday.getDay();
+    monday.setDate(monday.getDate() - ((day + 6) % 7));
+
+    const labels: DayLabel[] = [];
+
+    for (let i = 0; i < 5; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const formatted = `${d.getFullYear()}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d
+            .getDate()
+            .toString()
+            .padStart(2, '0')}`;
+        labels.push(new DayLabel(formatted));
+    }
+
+    return labels;
 };
 
 export default MealTable;

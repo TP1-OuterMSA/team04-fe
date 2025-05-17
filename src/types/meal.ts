@@ -1,5 +1,5 @@
 export interface MealMenu {
-    day: string;
+    date: string;
     mealType: string;
     menuContent: string;
 }

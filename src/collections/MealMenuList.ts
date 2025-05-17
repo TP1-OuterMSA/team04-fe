@@ -10,15 +10,23 @@ export class MealMenuList {
         this.menus = menus;
     }
 
-    private formatDay(dayArray: string): string {
-        const [year, month, date] = dayArray;
-        return `${year}.${month.toString().padStart(2, '0')}.${date.toString().padStart(2, '0')}`;
+    private formatDay(dateString: string): string {
+        // ✅ 안정적으로 날짜를 파싱하기 위해 UTC 시간 기준으로 고정
+        const date = new Date(dateString + 'T00:00:00');
+        return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date
+            .getDate()
+            .toString()
+            .padStart(2, '0')}`;
     }
 
     public extractDayLabels(): DayLabel[] {
-        const labels = this.menus.map(menu => this.formatDay(menu.day));
-        const uniqueLabels = Array.from(new Set(labels));
-        return uniqueLabels.map(label => new DayLabel(label));
+        const rawDates = this.menus.map(menu => menu.date); // 예: "2025-05-02"
+        const uniqueDates = Array.from(new Set(rawDates));
+
+        // ✅ 날짜 정렬 (Date 객체를 기준으로 정확히 정렬)
+        uniqueDates.sort((a, b) => new Date(a + 'T00:00:00').getTime() - new Date(b + 'T00:00:00').getTime());
+
+        return uniqueDates.map(date => new DayLabel(this.formatDay(date)));
     }
 
     public extractMealTypes(): MealType[] {
@@ -30,7 +38,7 @@ export class MealMenuList {
     public findMenu(mealType: MealType, dayLabel: DayLabel): MenuContent {
         const match = this.menus.find(menu =>
             menu.mealType === mealType.value() &&
-            this.formatDay(menu.day) === dayLabel.value()
+            this.formatDay(menu.date) === dayLabel.value()
         );
 
         if (!match) {
@@ -39,5 +47,4 @@ export class MealMenuList {
 
         return new MenuContent(match.menuContent);
     }
-
 }
