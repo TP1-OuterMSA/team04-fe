@@ -1,12 +1,15 @@
-import React, {useState, useMemo} from 'react';
+import React, { useState, useMemo } from 'react';
 import MealTable from './MealTable';
-import {useMealData} from '../hooks/useMealData';
+import { MealMenu } from '../types/meal';
 
-const MealTableContainer: React.FC = () => {
-  const {mealMenus, isLoading} = useMealData();
+interface Props {
+  mealMenus: MealMenu[];
+}
+
+const MealTableContainer: React.FC<Props> = ({ mealMenus }) => {
   const [baseDate, setBaseDate] = useState(new Date());
 
-  const {monday, friday, dateRange} = useMemo(() => {
+  const { monday, friday, dateRange } = useMemo(() => {
     const dayOfWeek = baseDate.getDay();
     const monday = new Date(baseDate);
     monday.setDate(baseDate.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
@@ -21,14 +24,11 @@ const MealTableContainer: React.FC = () => {
     };
   }, [baseDate]);
 
-
   const getWeekNumber = (date: Date): number => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
-    return Math.ceil((date.getDate() + offset) / 7);
+    return Math.min(4, Math.ceil(date.getDate() / 7));
   };
 
-  const title = `${baseDate.getFullYear()}년 ${baseDate.getMonth() + 1}월 ${getWeekNumber(baseDate)}주차 식단표`;
+  const title = `${monday.getFullYear()}년 ${monday.getMonth() + 1}월 ${getWeekNumber(monday)}주차 식단표`;
 
   const thisWeekMenus = useMemo(() => {
     if (!mealMenus.length) return [];
@@ -74,19 +74,15 @@ const MealTableContainer: React.FC = () => {
       <div className="container">
         <h1>{title} ({dateRange})</h1>
 
-        {isLoading ? (
-            <div>로딩 중...</div>
-        ) : (
-            <div style={{minHeight: '600px'}}>
-              {thisWeekMenus.length > 0 ? (
-                  <MealTable mealMenus={thisWeekMenus}/>
-              ) : (
-                  <p style={{marginTop: '2rem'}}>해당 주차의 식단 정보가 없습니다.</p>
-              )}
-            </div>
-        )}
+        <div style={{ minHeight: '600px' }}>
+          {thisWeekMenus.length > 0 ? (
+              <MealTable mealMenus={thisWeekMenus} />
+          ) : (
+              <p style={{ marginTop: '2rem' }}>해당 주차의 식단 정보가 없습니다.</p>
+          )}
+        </div>
 
-        <div style={{display: 'flex', justifyContent: 'center', marginTop: '2rem', gap: '1rem'}}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem', gap: '1rem' }}>
           <button
               onClick={() => setBaseDate(prev => {
                 const copy = new Date(prev);
@@ -124,9 +120,9 @@ const MealTableContainer: React.FC = () => {
 
 function formatDate(date: Date): string {
   return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date
-  .getDate()
-  .toString()
-  .padStart(2, '0')}`;
+      .getDate()
+      .toString()
+      .padStart(2, '0')}`;
 }
 
 function stripTime(date: Date): Date {
