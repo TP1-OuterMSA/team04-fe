@@ -5,4 +5,8 @@ export interface MealMenu {
     menuTitle: string;
     menuContent: string;
     extraInfo: string;
+    meals: {
+        mealName: string;
+        mealCategory: string;
+    }[];
 }

@@ -1,0 +1,79 @@
+/* mealTable.css*/
+.meal-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.meal-table th,
+.meal-table td {
+  border: 1.5px solid #333;
+  padding: 8px;
+  vertical-align: middle;
+}
+
+.meal-table td:first-child,
+.meal-table th:first-child {
+  background-color: #e6f4ff;
+  min-width: 100px;
+}
+
+.meal-type-cell {
+  font-size: 2.0rem;
+  background-color: #e6f4ff;
+  font-weight: bold;
+}
+
+.meal-table th {
+  background-color: #e6f4ff;
+  white-space: nowrap;
+  text-align: center;
+  font-weight: bold;
+
+}
+
+.category-row {
+  margin-bottom: 0.05rem;
+  padding-top: 0.05rem;
+  padding-bottom: 0.05rem;
+  display: flex;
+  min-height: 2.2rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.category-row:last-child {
+  border-bottom: none;
+}
+
+.category-name {
+  width: 80px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid #333;
+}
+
+.food-list {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding-left: 4px;
+}
+
+.food-item {
+  cursor: pointer;
+  color: black;
+  padding-right: 8px;
+}
+
+.food-item.highlighted {
+  background-color: yellow;
+}
+
+.no-food {
+  color: #999;
+}

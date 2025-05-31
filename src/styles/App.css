@@ -1,3 +1,4 @@
+/* App.css */
 body {
   margin: 0;
   background-color: #f4f7fa;
@@ -7,7 +8,7 @@ body {
 }
 
 .container {
-  max-width: 960px;
+  max-width: 100%;
   margin: 1rem auto;
   padding: 2rem;
   box-sizing: border-box;

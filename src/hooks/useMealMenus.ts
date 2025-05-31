@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MealMenu } from '../types/meal';
 import { MealMenuFetcher } from '../services/MealMenuFetcher';
 
-export const useMealData = () => {
+export function useMealMenus() {
     const [mealMenus, setMealMenus] = useState<MealMenu[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -14,4 +14,4 @@ export const useMealData = () => {
     }, []);
 
     return { mealMenus, isLoading };
-};
+}
