@@ -1,3 +1,5 @@
+
+
 import React, { useState } from 'react';
 import { MealMenu } from '../../types/meal';
 import MealTable from './MealTable';
@@ -19,20 +21,52 @@ const MealTableContainer: React.FC<MealTableContainerProps> = ({ mealMenus }) =>
     return {
       start: formatDate(startOfWeek),
       end: formatDate(endOfWeek),
+      startDate: new Date(startOfWeek),
+      endDate: new Date(endOfWeek)
     };
   };
 
-  const filteredMenus = mealMenus.filter(menu => {
-    const menuDate = formatDate(new Date(menu.date));
-    const { start, end } = getCurrentWeek();
-    return menuDate >= start && menuDate <= end;
-  });
+  const generateWeekDates = () => {
+    const { startDate } = getCurrentWeek();
+    const dates = [];
+
+    for (let i = 0; i < 5; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      dates.push(formatDate(currentDate));
+    }
+
+    return dates;
+  };
+
+  // 각 날짜별로 식단 데이터를 매핑
+  const getCompleteMenus = () => {
+    const weekDates = generateWeekDates();
+    const menuMap = new Map();
+
+    // 기존 메뉴 데이터를 날짜별로 그룹화
+    mealMenus.forEach(menu => {
+      const dateKey = formatDate(new Date(menu.date));
+      if (!menuMap.has(dateKey)) {
+        menuMap.set(dateKey, []);
+      }
+      menuMap.get(dateKey).push(menu);
+    });
+
+
+    return weekDates.map(date => ({
+      date,
+      menus: menuMap.get(date) || []
+    }));
+  };
 
   const handlePrevWeek = () => setWeekIndex(prev => prev - 1);
   const handleNextWeek = () => setWeekIndex(prev => prev + 1);
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setHighlightKeyword(e.target.value.trim());
   };
+
+  const completeMenus = getCompleteMenus();
 
   return (
       <div className="container">
@@ -50,7 +84,7 @@ const MealTableContainer: React.FC<MealTableContainerProps> = ({ mealMenus }) =>
             className="search-input"
         />
 
-        <MealTable mealMenus={filteredMenus} highlightKeyword={highlightKeyword} />
+        <MealTable completeMenus={completeMenus} highlightKeyword={highlightKeyword} />
       </div>
   );
 };
