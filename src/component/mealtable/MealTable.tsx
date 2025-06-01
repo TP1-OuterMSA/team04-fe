@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
-import { MealMenu } from '../../types/meal.ts';
-import { API_ENDPOINTS } from '../../config/api.ts';
+
+
+
+import React, {useState} from 'react';
+import {MealMenu} from '../../types/meal.ts';
+import {API_ENDPOINTS} from '../../config/api.ts';
 import NutritionModal from '../nutrition/NutritionModal.tsx';
-import './MealTable.css';  // 여기 추가
+import './MealTable.css';
+
+interface CompleteMenuData {
+  date: string;
+  menus: MealMenu[];
+}
 
 interface MealTableProps {
-  mealMenus: MealMenu[];
+  completeMenus: CompleteMenuData[];
   highlightKeyword: string;
 }
 
-const MealTable: React.FC<MealTableProps> = ({ mealMenus, highlightKeyword }) => {
+const MealTable: React.FC<MealTableProps> = ({completeMenus, highlightKeyword}) => {
   const [nutritionInfo, setNutritionInfo] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const dates = [...new Set(mealMenus.map(menu => formatDate(menu.date)))].sort();
-  const mealTypes = [...new Set(mealMenus.map(menu => menu.mealType))];
+  // completeMenus에서 날짜와 식사 타입 추출
+  const dates = completeMenus.map(item => item.date);
+  const allMealTypes = completeMenus.flatMap(item =>
+      item.menus.map(menu => menu.mealType)
+  );
+  const mealTypes = [...new Set(allMealTypes)];
 
   const fetchNutrition = async (foodName: string) => {
     try {
@@ -66,53 +78,57 @@ const MealTable: React.FC<MealTableProps> = ({ mealMenus, highlightKeyword }) =>
                 <td className="meal-type-cell">
                   <strong>{mealTypeMap[mealType] || mealType}</strong>
                 </td>
-                {dates.map(date => {
-                  const menu = mealMenus.find(
-                      m => formatDate(m.date) === date && m.mealType === mealType
-                  );
-
-                  if (!menu || !menu.meals) return <td key={`${date}-${mealType}`}></td>;
-
+                {completeMenus.map(({date, menus}) => {
+                  const menu = menus.find(m => m.mealType === mealType);
                   const categoryOrder = ['RICE', 'NOODLE', 'MAIN', 'SIDE', 'DESSERT', 'SOUP'];
 
-                  const categoryMap: Record<string, string[]> = {};
-                  menu.meals.forEach(meal => {
-                    if (!categoryMap[meal.mealCategory]) {
-                      categoryMap[meal.mealCategory] = [];
-                    }
-                    categoryMap[meal.mealCategory].push(meal.mealName);
-                  });
+                  let categoryMap: Record<string, string[]> = {};
+
+                  if (menu && menu.meals) {
+                    menu.meals.forEach(meal => {
+                      if (!categoryMap[meal.mealCategory]) {
+                        categoryMap[meal.mealCategory] = [];
+                      }
+                      categoryMap[meal.mealCategory].push(meal.mealName);
+                    });
+                  }
 
                   return (
                       <td key={`${date}-${mealType}`}>
-                        {categoryOrder.map(category => {
-                          const items = categoryMap[category] || [];
+                        {menu && menu.meals && menu.meals.length > 0 ? (
+                            categoryOrder.map(category => {
+                              const items = categoryMap[category] || [];
 
-                          return (
-                              <div className="category-row">
-                                <div className="category-name">{categoryNameMap[category] || category}</div>
-                                <div className="food-list">
-                                  {items.length > 0 ? (
-                                      items.map((food, idx) => {
-                                        const isHighlighted = highlightKeyword && food.includes(highlightKeyword);
-                                        return (
-                                            <div
-                                                key={idx}
-                                                onClick={() => fetchNutrition(food)}
-                                                className={`food-item${isHighlighted ? ' highlighted' : ''}`}
-                                            >
-                                              {food}
-                                            </div>
-                                        );
-                                      })
-                                  ) : (
-                                      <div className="no-food">-</div>
-                                  )}
-                                </div>
-                              </div>
-                          );
-                        })}
+                              return (
+                                  <div key={category} className="category-row">
+                                    <div
+                                        className="category-name">{categoryNameMap[category] || category}</div>
+                                    <div className="food-list">
+                                      {items.length > 0 ? (
+                                          items.map((food, idx) => {
+                                            const isHighlighted = highlightKeyword && food.includes(highlightKeyword);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    onClick={() => fetchNutrition(food)}
+                                                    className={`food-item${isHighlighted ? ' highlighted' : ''}`}
+                                                >
+                                                  {food}
+                                                </div>
+                                            );
+                                          })
+                                      ) : (
+                                          <div className="no-food">-</div>
+                                      )}
+                                    </div>
+                                  </div>
+                              );
+                            })
+                        ) : (
+                            <div className="no-meal-message">식단 정보 없음</div>
+                        )}
                       </td>
+
                   );
                 })}
               </tr>
@@ -121,18 +137,11 @@ const MealTable: React.FC<MealTableProps> = ({ mealMenus, highlightKeyword }) =>
         </table>
 
         {showModal && nutritionInfo && (
-            <NutritionModal nutritionInfo={nutritionInfo} onClose={closeModal} />
+            <NutritionModal nutritionInfo={nutritionInfo} onClose={closeModal}/>
         )}
       </>
   );
 };
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString + 'T00:00:00');
-  return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date
-  .getDate()
-  .toString()
-  .padStart(2, '0')}`;
-}
-
 export default MealTable;
+
