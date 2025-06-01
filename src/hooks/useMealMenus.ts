@@ -1,19 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MealMenu } from '../types/meal';
 import { MealMenuFetcher } from '../services/MealMenuFetcher';
 
-export const useMealData = (): { mealMenus: MealMenu[]; isLoading: boolean } => {
+export function useMealMenus() {
     const [mealMenus, setMealMenus] = useState<MealMenu[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetcher = new MealMenuFetcher();
-
-        fetcher.fetch().then((menus) => {
+        new MealMenuFetcher().fetch().then((menus) => {
             setMealMenus(menus);
             setIsLoading(false);
         });
     }, []);
 
     return { mealMenus, isLoading };
-};
+}
