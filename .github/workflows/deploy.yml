@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - 'release'
+  workflow_dispatch:
 
 env:
   APP_ENV: development
@@ -14,6 +15,8 @@ env:
   VITE_API_HOST: ${{ secrets.SERVER_HOST }}
   APP_NAME: team04-fe
   ECR_REPOSITORY: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/team04-fe-repository
+  APP_NAME_2: init-page
+
 permissions:
   id-token: write
   contents: read
