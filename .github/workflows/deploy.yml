@@ -15,7 +15,7 @@ env:
   VITE_API_HOST: ${{ secrets.SERVER_HOST }}
   APP_NAME: team04-fe
   ECR_REPOSITORY: 809691348554.dkr.ecr.ap-northeast-2.amazonaws.com/team04-fe-repository
-  APP_NAME_2: init-page
+  APP_NAME_2: team04-fe
 
 permissions:
   id-token: write
@@ -64,29 +64,27 @@ jobs:
         run: |
           docker build --build-arg VITE_API_HOST=${{ secrets.SERVER_HOST }} -t ${{ env.ECR_REPOSITORY }}:sha-${{ env.SHORT_SHA }} .
           docker push ${{ env.ECR_REPOSITORY }}:sha-${{ env.SHORT_SHA }}
-
-      # Infra 저장소 업데이트 단계
-      - name: Checkout infrastructure repository
+  # Infra 저장소 업데이트 단계-2
+      - name: Checkout infrastructure repository2
         uses: actions/checkout@v3
         with:
-          repository: TP1-OuterMSA/msa-infra
-          path: msa-infra
-          token: ${{ secrets.GH_PAT }}
+          repository: TP1-OuterMSA/msa-infra-main
+          path: msa-infra-main
+          token: ${{ secrets.GH_PAT_2 }}
 
       - name: Debug directory structure
         run: |
-          cd msa-infra
+          cd msa-infra-main
           ls -la
           echo "Checking charts directory:"
           ls -la charts/
           echo "Checking services directory:"
           ls -la charts/services/ || echo "Services directory not found"
-          find . -name "team04-fe" -type d
+          find . -name "init-page" -type d
 
       - name: Update image tag in Helm chart
         run: |
-          cd msa-infra/charts/services/${{ env.APP_NAME }}
-          
+          cd msa-infra-main/charts/services/${{ env.APP_NAME_2 }}
           if [ -f values.yaml ]; then
             echo "values.yaml exists"
             cat values.yaml | head -10  # 파일 내용 일부 출력
@@ -100,12 +98,13 @@ jobs:
             echo "OLD_TAG=$OLD_TAG" >> $GITHUB_ENV
           else
             echo "TAG_CHANGED=false" >> $GITHUB_ENV
-          fi
-
+          fi          
+    
       - name: Commit and push changes to infrastructure repo
         run: |
-          cd msa-infra
+          cd msa-infra-main
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git diff-index --quiet HEAD || (git commit -m "Update ${{ secrets.APP_NAME }} image tag to sha-${{ env.SHORT_SHA }}" && git push)
+          git diff-index --quiet HEAD || (git commit -m "Update ${{ env.APP_NAME_2 }} image tag to sha-${{ env.SHORT_SHA }}" && git push)
+          
